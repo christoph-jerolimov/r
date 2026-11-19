@@ -1,0 +1,50 @@
+#compdef r
+# zsh completion for r
+#
+# `r` is also a zsh builtin (it repeats the last command) which shadows the
+# binary. Disable it and load the completion from ~/.zshrc, after compinit:
+#   disable r
+#   source <(command r completions zsh)
+#
+# Alternatively save this file as `_r` in a directory of your $fpath.
+
+_r() {
+    local -a tasks runners subcommands options shells
+    local group value description entry
+
+    while IFS=$'\t' read -r group value description; do
+        [[ -n $value ]] || continue
+        # _describe separates name and description with a colon.
+        entry=${value//:/\\:}
+        [[ -n $description ]] && entry+=":$description"
+        case $group in
+            task) tasks+=("$entry") ;;
+            runner) runners+=("$entry") ;;
+            subcommand) subcommands+=("$entry") ;;
+            option) options+=("$entry") ;;
+            shell) shells+=("$entry") ;;
+        esac
+    done < <(command r __complete zsh -- "${(@)words[2,CURRENT]}" 2>/dev/null)
+
+    # Without candidates (e.g. for a task's own arguments) complete file names.
+    if (( $#tasks + $#runners + $#subcommands + $#options + $#shells == 0 )); then
+        _files
+        return
+    fi
+
+    local ret=1
+    (( $#tasks )) && _describe -t tasks 'task' tasks && ret=0
+    (( $#runners )) && _describe -t runners 'runner' runners && ret=0
+    (( $#subcommands )) && _describe -t subcommands 'r command' subcommands && ret=0
+    (( $#options )) && _describe -t options 'option' options && ret=0
+    (( $#shells )) && _describe -t shells 'shell' shells && ret=0
+    return ret
+}
+
+if [[ $funcstack[1] == _r ]]; then
+    # Autoloaded from $fpath.
+    _r "$@"
+else
+    # Sourced, e.g. via `source <(command r completions zsh)`.
+    compdef _r r
+fi

@@ -1,0 +1,17 @@
+[package]
+name = "r"
+version = "0.1.0"
+edition = "2024"
+description = "One short command for every task runner: make, npm, yarn, pnpm, bun, just, task, deno and cargo"
+readme = "README.md"
+
+[dependencies]
+clap = { version = "4.6.8", features = ["derive"] }
+serde_json = { version = "1.0.154", features = ["preserve_order"] }
+toml = "1.2.1"
+yaml-rust2 = "0.13.0"
+
+[profile.release]
+lto = true
+strip = true
+codegen-units = 1
